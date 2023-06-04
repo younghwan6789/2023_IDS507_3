@@ -8,6 +8,7 @@ install.packages("GGally") # 산점도 행렬
 install.packages("randomForest")
 install.packages("caTools") # train/test set 분류
 install.packages("caret") # confusion matrix
+install.packages("pROC")
 
 # 2. 패키지 로딩
 library(readr)
@@ -19,6 +20,7 @@ library(GGally)
 library(randomForest)
 library(caTools)
 library(caret)
+library(pROC)
 
 # 3. 함수 선언
 ## 3.1. 따릉이 대여소 정보(2022. 12. 기준)를 얻어오기 위한 함수 로딩
@@ -31,10 +33,12 @@ load_dda_station_info <- function() {
 ## 3.2. 따릉이 일별 사용률 정보를 얻어오기 위한 함수 로딩
 load_dda_daily_info <- function() {
   # 오래 걸리니까 간단한 테스트 시, 위 두 줄을 주석으로 막고 아래 두 줄을 열고 테스트 해보세요.
-  file_names_upper <- c("22.01", "22.02", "22.03", "22.04", "22.05", "22.06")
-  file_names_lower <- c("22.07", "22.08", "2209", "2210", "2211", "2212")
-  #file_names_upper <- c("22.01")
-  #file_names_lower <- c("22.07")
+  ## 2023. 06. 04. 데이터를 모두 사용할 경우, 
+  ## 2023. 06. 04. 15:00 - 5월, 9월 데이터만 사용하는 것으로.
+  #file_names_upper <- c("22.01", "22.02", "22.03", "22.04", "22.05", "22.06")
+  #file_names_lower <- c("22.07", "22.08", "2209", "2210", "2211", "2212")
+  file_names_upper <- c("22.05")
+  file_names_lower <- c("2209")
   
   dda_daily_list <- list()
   
@@ -85,11 +89,63 @@ str(dda_station_info) # 2719 rows 확인
 length(unique(dda_station_info$자치구)) # 자치구 데이터의 고유값 확인 : 25개의 자치구(정보: 서울시는 25개 자치구와 426개의 행정동으로 이루어짐.)
 sum(is.na(dda_station_info))
 
+######
+## 그래프로 확인
+
+length(unique(dda_station_info$`대여소 번호`)) # 2,719 개
+length(unique(dda_station_info$자치구)) # 25개
+
+# 자치구별 대여소 개수 계산
+count <- table(dda_station_info$자치구)
+
+# 막대 그래프 그리기
+ggplot(data = dda_station_info, aes(x = 자치구)) +
+  geom_bar(fill = "#21a37d") +
+  labs(x = "자치구", y = "대여소 개수") +
+  ggtitle("자치구별 대여소 번호 개수") +
+  theme_minimal()
+
+######
+
 # 5. 따릉이 일별 사용률 얻어오기 (오래 걸립니다. - 약 90초 - PC 사양마다 차이가 있습니다. 빨간 경고 메시지 나오면 다 된겁니다.)
+## 5, 9월 데이터만 -> 약 10초
 dda_daily_list <- load_dda_daily_info()
 
 # 6. 따릉이 일별 데이터를 모두 결합 # 총 945,356 건
+## 5, 9월 데이터만 -> 158,721 건
 dda_daily_full <- do.call(rbind, dda_daily_list)
+
+
+##########
+# 데이터 확인용 구간이라서 skip 하세요~
+
+summary(dda_daily_list[1]$`22.01`$총이용건수)
+
+head(dda_daily_list[1]$총이용건수)
+summary(dda_daily_list[2])
+summary(dda_daily_list[3])
+
+boxplot(dda_daily_list[1]$`22.01`$총이용건수,
+        dda_daily_list[2]$`22.02`$총이용건수,
+        dda_daily_list[3]$`22.03`$총이용건수,
+        dda_daily_list[4]$`22.04`$총이용건수,
+        dda_daily_list[5]$`22.05`$총이용건수,
+        dda_daily_list[6]$`22.06`$총이용건수,
+        dda_daily_list[7]$`22.07`$총이용건수,
+        dda_daily_list[8]$`22.08`$총이용건수,
+        dda_daily_list[9]$`2209`$총이용건수,
+        dda_daily_list[10]$`2210`$총이용건수,
+        dda_daily_list[11]$`2211`$총이용건수,
+        dda_daily_list[12]$`2212`$총이용건수,
+        names = c("1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"),
+        main = "BoxPlot",
+        ylab = "총이용건수",
+        col = "lightblue",
+        outline = FALSE)
+
+
+##########
+
 
 
 ## 6.1. EDA
@@ -184,9 +240,9 @@ ggplot(weather_2022_mod, aes(x = `일강수량(mm)`)) +
   theme_minimal()
 
 ggplot(weather_2022_mod, aes(x = 일시)) +
-  geom_line(aes(y = weather_2022_mod$`평균기온(°C)`, color = "평균기온")) +
-  geom_line(aes(y = weather_2022_mod$`최저기온(°C)`, color = "최저기온")) +
-  geom_line(aes(y = weather_2022_mod$`최고기온(°C)`, color = "최고기온")) +
+  geom_line(aes(y = `평균기온(°C)`, color = "평균기온")) +
+  geom_line(aes(y = `최저기온(°C)`, color = "최저기온")) +
+  geom_line(aes(y = `최고기온(°C)`, color = "최고기온")) +
   labs(x = "일시", y = "온도(°C)", color = "변수") +
   scale_color_manual(values = c("평균기온" = "yellow", "최저기온" = "red", "최고기온" = "blue")) +
   theme_minimal()
@@ -253,7 +309,7 @@ sum(is.na(dda_station_info))
 
 dda_merge1 <- merge(dda_daily_full, dda_station_info, by.x = "대여소번호", by.y = "대여소 번호", all.x = TRUE)
 
-sum(is.na(dda_merge1)) # 결측치 8,929 왜...
+sum(is.na(dda_merge1)) # 결측치 8,929. -> 5, 9월 데이터는 1,440.
 
 dda_merge1_na_rows = dda_merge1[!complete.cases(dda_merge1), ]
 ## 총 59개의 자치구 정보 누락된 대여소 번호 발견
@@ -277,7 +333,7 @@ head(weather_category)
 # 11. 자치구 '구' 정보를 통해 날씨 정보를 가져오기 전, 날씨 측정 지점을 가져옴
 dda_merge2 <- merge(dda_merge1_mod, weather_category, by.x = "자치구", by.y = "지점명", all.x = TRUE)
 head(dda_merge2)
-sum(is.na(dda_merge2)) # 전체 데이터에서 36,979 개 발생
+sum(is.na(dda_merge2)) # 전체 데이터에서 36,979 개 발생, 5, 9월 데이터 -> 6,216 개
 
 dda_merge2_na_rows = dda_merge2[!complete.cases(dda_merge2), ]
 head(dda_merge2_na_rows)
@@ -292,7 +348,7 @@ sum(is.na(dda_merge2_mod)) # 결측치 사라짐. 모두 종로구였음.
 
 # 12. 날짜와 지점 정보를 이용하여 날씨 정보들을 가져옴
 dda_merge3 <- merge(dda_merge2_mod, weather_2022_mod, by.x = c("대여일자", "지점"), by.y = c("일시", "지점"), all.x = TRUE)
-sum(is.na(dda_merge3)) # 결측치 1,035
+sum(is.na(dda_merge3)) # 결측치 1,035. 5, 9월 데이터는 530.
 
 dda_merge3_na_rows = dda_merge3[!complete.cases(dda_merge3), ]
 head(dda_merge3_na_rows)
@@ -370,26 +426,143 @@ colnames(df_for_rf) <- c("대여일자", "자치구", "지점", "대여소번호
 
 df_for_rf <- subset(df_for_rf, select = -c(자치구, 지점)) # 데이터 줄이기
 
-sample_split <- sample.split(Y = df_for_rf, SplitRatio = 0.8)
+sample_split <- sample.split(Y = df_for_rf, SplitRatio = 0.5)
 train_set <- subset(x = df_for_rf, sample_split == TRUE)
 test_set <- subset(x = df_for_rf, sample_split == FALSE)
 
 dim(train_set)
 dim(test_set)
 
+
 head(train_set)
 
+#### 17. 18.
+rf_model <- randomForest(총이용건수 ~ 평균기온 + 일강수량 + 평균풍속 + 이산화질소농도 + 오존농도 + 일산화탄소농도 + 아황산가스농도 + 미세먼지농도 + 초미세먼지농도 + 공휴일여부, data = train_set, importance = TRUE)
+predictions <- predict(rf_model, newdata = test_set)
+
+rf_model
+
+mse <- mean((test_set$총이용건수 - predictions)^2)
+print(mse)
+
+levels(predictions)
+levels(as.factor(predictions))
+levels(test_set$총이용건수)
+levels(as.factor(test_set$총이용건수))
+
+# 레벨 맞추기
+factor_predictions <- factor(predictions, levels = levels(as.factor(test_set$총이용건수)))
+factor_test <- factor(test_set$총이용건수, levels = levels(as.factor(test_set$총이용건수)))
+confusion_matrix <- confusionMatrix(factor_predictions_2, factor_test)
+
+print(confusion_matrix)
+
+# 변수의 중요도 파악
+varImpPlot(rf_model, type = 2, col = 1, cex = 1)
+
+# Accuracy 계산
+accuracy <- confusion_matrix$overall["Accuracy"]
+print(paste("Accuracy:", accuracy))
+
+# Precision 계산
+precision <- confusion_matrix$byClass["Pos Pred Value"]
+print(paste("Precision:", precision))
+
+# Recall 계산
+recall <- confusion_matrix$byClass["Sensitivity"]
+print(paste("Recall:", recall))
+
+# F1 Score 계산
+f1_score <- confusion_matrix$byClass["F1"]
+print(paste("F1 Score:", f1_score))
+
+# AUC 계산
+roc <- roc(test_set$총이용건수, as.numeric(predictions))
+auc <- auc(roc)
+print(paste("AUC:", auc))
+
+####
+###########
+# 이건 3분만에 돌아감 (ntree = 100)
+
+str(train_set)
+head(train_set)
+
+rf_model_2 <- randomForest(총이용건수 ~ 평균기온 + 일강수량 + 평균풍속 + 이산화질소농도 + 오존농도 + 일산화탄소농도 + 아황산가스농도 + 미세먼지농도 + 초미세먼지농도 + 공휴일여부, data = train_set, importance = TRUE,
+                           ntree = 100)
 
 
-# 17. Random forest 모델 생성
+predictions_2 <- predict(rf_model_2, newdata = test_set)
+
+levels(as.factor(predictions_2))
+levels(as.factor(test_set$총이용건수))
+
+# 레벨 맞추기
+factor_predictions <- factor(predictions_2, levels = levels(as.factor(test_set$총이용건수)))
+factor_test <- factor(test_set$총이용건수, levels = levels(factor_predictions))
+
+levels(factor_predictions)
+levels(factor_test)
+
+sum(is.na(predictions_2))
+sum(is.na(factor_test))
+
+confusion_matrix <- confusionMatrix(data = factor_predictions, reference = factor_test)
+
+confusion_matrix
+
+# 변수의 중요도 파악
+varImpPlot(rf_model_2, type = 2, col = 1, cex = 1)
+
+# Accuracy 계산
+accuracy <- confusion_matrix$overall["Accuracy"]
+print(paste("Accuracy:", accuracy))
+
+# Precision 계산
+precision <- confusion_matrix$byClass["Pos Pred Value"]
+print(paste("Precision:", precision))
+
+# Recall 계산
+recall <- confusion_matrix$byClass["Sensitivity"]
+print(paste("Recall:", recall))
+
+# F1 Score 계산
+f1_score <- confusion_matrix$byClass["F1"]
+print(paste("F1 Score:", f1_score))
+
+# AUC 계산
+roc <- roc(test_set$총이용건수, as.numeric(predictions))
+auc <- auc(roc)
+print(paste("AUC:", auc))
+
+###########
+
+# 17. Random forest 모델 생성 (5, 9월 데이터 -> 30분정도)
 rf_model <- randomForest(총이용건수 ~ ., data = train_set)
 
 # 18. 모델 예측
 predictions <- predict(rf_model, newdata = test_set)
 
+
 # 19. 모델 평가
-mse <- mean((test_set$총이용건수 - prediction)^2)
+mse <- mean((test_set$총이용건수 - predictions)^2)
+print(mse)
+
 rmse <- sqrt(mse)
+print(rmse)
+
+
+
+# 잔차 계산
+residuals <- test_set$총이용건수 - predictions
+print(residuals)
+# 잔차 시각화 - MSE 점수 확인
+plot(predictions, residuals,
+     main = "Residual Plot",
+     xlab = "Predicted Values",
+     ylab = "Residuals")
+
+
 
 
 
@@ -403,5 +576,6 @@ ggpairs(weather_2022_mod[, c("평균기온(°C)", "최저기온(°C)", "최고�
 ggpairs(airpolution_2022[, c("이산화질소농도(ppm)", "오존농도(ppm)", "일산화탄소농도(ppm)", "아황산가스농도(ppm)", "미세먼지농도(㎍/㎥)", "초미세먼지농도(㎍/㎥)")])
 
 ## 총이용건수 포함
-ggpairs(dda_merge5[, c("총이용건수", "평균기온(°C)", "최저기온(°C)", "최고기온(°C)", "일강수량(mm)", "평균 풍속(m/s)")])
+ggpairs(dda_merge5[, c("총이용건수", "평균기온(°C)", "최저기온(°C)", "최고기온(°C)", "일강수량(mm)", "평균 풍속(m/s)", "이산화질소농도(ppm)", "오존농도(ppm)", "일산화탄소농도(ppm)", "아황산가스농도(ppm)", "미세먼지농도(㎍/㎥)", "초미세먼지농도(㎍/㎥)", "holiday")])
+
 
