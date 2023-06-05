@@ -32,6 +32,10 @@ summary(df)
 sum(is.na(df))
 head(df)
 
+### !!! 구로구 처리가 잘 안된듯. 수정 필요. 일단 제거하고 진행.
+df <- na.omit(df)
+print(df[!complete.cases(df),],)
+
 ################################################################################
 # 4. 데이터 분할
 ################################################################################
@@ -50,31 +54,35 @@ test_y <- subset(test_set, select = c(rent))
 ################################################################################
 # 5. Random Forest
 ################################################################################
-### (1) 5월 데이터만 실험한 결과가 아래와 같습니다.
+### (1) 5월, 9월 데이터로 실험한 결과가 아래와 같습니다.
 rf_model <- randomForest(train_x, train_y$rent, ntree = 100, type = "regression")
 print(rf_model)
+#### > 주어진 데이터의 변동성 중 약 45.02%를 설명 가능
 
 # 테스트 데이터 예측
 predicted_y <- predict(rf_model, test_x)
 
 mse <- mean((test_y$rent - predicted_y)^2)
-print(mse) # 낮을 수록 좋음 > 여기서는 2174.692
-calculate_r_squared(predicted_y, test_y$rent) # 1일 수록 좋음 > 여기서는 0.3889918
+print(mse) # 낮을 수록 좋음
+#### > 여기서는 1963.33
+
+calculate_r_squared(predicted_y, test_y$rent) # 1일 수록 좋음
+#### > 여기서는 0.4551909
 
 # 변수의 중요도 파악
 varImpPlot(rf_model, type = 2, col = 1, cex = 1)
 
 
-### (2) 5월 데이터만 실험한 결과가 아래와 같습니다.
-rf_model <- randomForest(rent ~ avg_temperature + rainy + windy + no2_ppm + o3_ppm + co_ppm + so2_ppm + mise + chomise + holiday, data = train_set, importance = TRUE)
-print(rf_model)
+### (2) 
+rf_model_2 <- randomForest(rent ~ avg_temperature + rainy + windy + no2_ppm + o3_ppm + co_ppm + so2_ppm + mise + chomise + holiday, data = train_set, importance = TRUE)
+print(rf_model_2)
 
 # 테스트 데이터 예측
-predicted_y <- predict(rf_model, test_x)
+predicted_y <- predict(rf_model_2, test_x)
 
 mse <- mean((test_y$rent - predicted_y)^2)
-print(mse) # 낮을 수록 좋음 > 여기서는 3139.815
-calculate_r_squared(predicted_y, test_y$rent) # 1일 수록 좋음 > 여기서는 0.1112568
+print(mse)
+calculate_r_squared(predicted_y, test_y$rent)
 
 # 변수의 중요도 파악
-varImpPlot(rf_model, type = 2, col = 1, cex = 1)
+varImpPlot(rf_model_2, type = 2, col = 1, cex = 1)
