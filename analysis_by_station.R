@@ -26,12 +26,23 @@ source('visualization.R') # 시각화 관련 함수
 ################################################################################
 # 3. 통합 데이터 파일 로딩
 ################################################################################
-df = get_full_merged_info("")
+df = get_full_merged_info("full")
 
 str(df)
 summary(df)
 sum(is.na(df))
 head(df)
+
+### 502번 대여소만 선택
+df_502 <- df[df$branch_no == 502, ]
+
+# 364개 data
+str(df_502)
+summary(df_502)
+sum(is.na(df_502))
+head(df_502)
+
+df <- df_502
 
 ################################################################################
 # 4. 데이터 분할
@@ -50,35 +61,18 @@ test_y <- subset(test_set, select = c(rent))
 ################################################################################
 # 5. Random Forest
 ################################################################################
+#### 5.1. ntree 500, 변수를 줄여서 테스트
 
-#### 5.1. 그냥 테스트
-rf_model <- randomForest(train_x, train_y$rent, type = "regression")
-print(rf_model)
-
-predicted_y <- predict(rf_model, test_x)
-
-mse <- mean((test_y$rent - predicted_y)^2)
-print(mse) # 낮을 수록 좋음
-
-calculate_r_squared(predicted_y, test_y$rent) # 1일 수록 좋음
-
-varImpPlot(rf_model, type = 2, col = 1, cex = 1)
-
-# 잔차 계산
-residuals <- test_y$rent - predicted_y
-print(residuals)
-# 잔차 시각화 - MSE 점수 확인
-plot(predicted_y, residuals,
-     main = "Residual Plot",
-     xlab = "Predicted Values",
-     ylab = "Residuals")
-
-
-#### 5.2. ntree 100 테스트
-do_randomForest <- function(x, y) {
+do_randomForest_with_some_var <- function(train_set, my_ntree) {
   start_time = Sys.time()
   print(paste("Start   :", start_time))
-  rf <- randomForest(x, y, ntree = 100, type = "regression")
+  
+#  rf <- randomForest(rent ~ avg_temperature + rainy + windy + no2_ppm + o3_ppm + co_ppm + so2_ppm + part_matter + ultra_part_matter + holiday, 
+#                     data = train_set, ntree = my_ntree, type = "regression") #importance = TRUE
+ 
+  rf <- randomForest(rent ~ avg_temperature + rainy + windy + no2_ppm + o3_ppm + co_ppm + so2_ppm + part_matter, 
+                     data = train_set, ntree = my_ntree, type = "regression") #importance = TRUE
+   
   finish_time = Sys.time()
   print(paste("Finish  :", finish_time))
   print(paste("Elapsed :", round(difftime(finish_time, start_time, units = "secs"), 3), "seconds"))
@@ -86,7 +80,7 @@ do_randomForest <- function(x, y) {
   return(rf)
 }
 
-rf_model <- do_randomForest(train_x, train_y$rent)
+rf_model <- do_randomForest_with_some_var(train_set, 500)
 print(rf_model)
 
 predicted_y <- predict(rf_model, test_x)
@@ -106,27 +100,10 @@ plot(predicted_y, residuals,
      main = "Residual Plot",
      xlab = "Predicted Values",
      ylab = "Residuals")
-####
 
 
-
-#### 5.3. ntree 100, 변수를 줄여서 테스트
-
-do_randomForest_with_some_var <- function(train_set) {
-  start_time = Sys.time()
-  print(paste("Start   :", start_time))
-
-  rf <- randomForest(rent ~ avg_temperature + rainy + windy + no2_ppm + o3_ppm + co_ppm + so2_ppm + part_matter + ultra_part_matter + holiday, 
-                             data = train_set, ntree = 100, type = "regression") #importance = TRUE
-  
-  finish_time = Sys.time()
-  print(paste("Finish  :", finish_time))
-  print(paste("Elapsed :", round(difftime(finish_time, start_time, units = "secs"), 3), "seconds"))
-
-  return(rf)
-}
-
-rf_model <- do_randomForest_with_some_var(train_set)
+#### 5.2. ntree 100으로 변경 후 테스트
+rf_model <- do_randomForest_with_some_var(train_set, 100)
 print(rf_model)
 
 predicted_y <- predict(rf_model, test_x)
@@ -146,19 +123,9 @@ plot(predicted_y, residuals,
      main = "Residual Plot",
      xlab = "Predicted Values",
      ylab = "Residuals")
-####
 
-
-
-#### 5.4. ntree 100, 정규화 후, 변수를 줄여서 테스트
-
-########### 정규화
-#columns <- c("avg_temperature", "low_temperature", "high_temperature", "rainy", "windy", "no2_ppm", "o3_ppm", "co_ppm", "so2_ppm", "part_matter", "ultra_part_matter")
+#### 5.3. 일부 정규화 후 ntree 100 테스트
 df_normalized <- df
-
-normalize_column <- function(col_data) {
-  return(rescale(col_data))
-}
 
 df_normalized$avg_temperature <- normalize_column(df_normalized$avg_temperature)
 df_normalized$low_temperature <- normalize_column(df_normalized$low_temperature)
@@ -172,7 +139,6 @@ df_normalized$so2_ppm <- normalize_column(df_normalized$so2_ppm)
 df_normalized$part_matter <- normalize_column(df_normalized$part_matter)
 df_normalized$ultra_part_matter <- normalize_column(df_normalized$ultra_part_matter)
 
-
 sample_split = sample.split(Y = df_normalized, SplitRatio = 0.7)
 
 train_set <- subset(x = df_normalized, sample_split == TRUE)
@@ -185,24 +151,8 @@ test_x <- subset(test_set, select = -c(rent))
 test_y <- subset(test_set, select = c(rent))
 
 
-###########
 
-
-do_randomForest_with_some_normalized_var <- function(train_set) {
-  start_time = Sys.time()
-  print(paste("Start   :", start_time))
-  
-  rf <- randomForest(rent ~ avg_temperature + rainy + windy + no2_ppm + o3_ppm + co_ppm + so2_ppm + part_matter + ultra_part_matter + holiday, 
-                     data = train_set, ntree = 100, type = "regression") #importance = TRUE
-  
-  finish_time = Sys.time()
-  print(paste("Finish  :", finish_time))
-  print(paste("Elapsed :", round(difftime(finish_time, start_time, units = "secs"), 3), "seconds"))
-  
-  return(rf)
-}
-
-rf_model <- do_randomForest_with_some_normalized_var(train_set)
+rf_model <- do_randomForest_with_some_var(train_set, 100)
 print(rf_model)
 
 predicted_y <- predict(rf_model, test_x)
@@ -222,29 +172,10 @@ plot(predicted_y, residuals,
      main = "Residual Plot",
      xlab = "Predicted Values",
      ylab = "Residuals")
-####
-start_time = Sys.time()
-finish_time = Sys.time()
-print(paste("Elapsed :", finish_time - start_time))
 
 
-#### 5.5. ntree 100, 정규화 후, 변수를 더 줄여서 테스트
-
-do_randomForest_with_some_normalized_var <- function(train_set) {
-  start_time = Sys.time()
-  print(paste("Start   :", start_time))
-  
-  rf <- randomForest(rent ~ avg_temperature + rainy + windy + part_matter + holiday, 
-                     data = train_set, ntree = 100, type = "regression") #importance = TRUE
-  
-  finish_time = Sys.time()
-  print(paste("Finish  :", finish_time))
-  print(paste("Elapsed :", round(difftime(finish_time, start_time, units = "secs"), 3), "seconds"))
-  
-  return(rf)
-}
-
-rf_model <- do_randomForest_with_some_normalized_var(train_set)
+#### 5.4. 정규화, ntree 500
+rf_model <- do_randomForest_with_some_var(train_set, 500)
 print(rf_model)
 
 predicted_y <- predict(rf_model, test_x)
@@ -264,4 +195,3 @@ plot(predicted_y, residuals,
      main = "Residual Plot",
      xlab = "Predicted Values",
      ylab = "Residuals")
-####

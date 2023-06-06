@@ -38,8 +38,8 @@ pre_proc_airpolustion <- function(df) {
 ################################################################################
 pre_proc_add_guro <- function(df) {
   guro_data <- list(
-    create_guro_data(df, "2022-06-16"),
-    create_guro_data(df, "2022-09-06")
+    create_weather_data(df, "2022-06-16", 423),
+    create_weather_data(df, "2022-09-06", 423)
   )
 
   df <- do.call(rbind, c(list(df), guro_data))
