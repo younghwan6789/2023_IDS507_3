@@ -141,7 +141,7 @@ get_full_merged_info <- function() {
   
 ### RandomForest에서 특수문자를 이해하지 못하므로 컬럼명 변경
   #colnames(df_merge4) <- c("대여일자","지점", "대여소번호", "총이용건수", "평균기온", "최저기온", "최고기온", "일강수량", "평균풍속", "이산화질소농도", "오존농도", "일산화탄소농도", "아황산가스농도", "미세먼지농도", "초미세먼지농도", "공휴일여부")
-  colnames(df_merge4) <- c("datetime","branch", "branch_no", "rent", "avg_temperature", "low_temperature", "high_temperature", "rainy", "windy", "no2_ppm", "o3_ppm", "co_ppm", "so2_ppm", "mise", "chomise", "holiday")
+  colnames(df_merge4) <- c("datetime","branch", "branch_no", "rent", "avg_temperature", "low_temperature", "high_temperature", "rainy", "windy", "no2_ppm", "o3_ppm", "co_ppm", "so2_ppm", "part_matter", "ultra_part_matter", "holiday")
   
   return(df_merge4)
 }
