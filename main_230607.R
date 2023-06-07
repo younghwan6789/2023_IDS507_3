@@ -255,6 +255,8 @@ dim(test_set)
 dim(test_x)
 dim(test_y)
 
+head(all_full_ready)
+
 ################################################################################
 # 10. Random Forest
 # 10.x 중 하나만 선택하여 수행하시면 됩니다.
@@ -296,6 +298,7 @@ model_rf <- randomForest(rent ~ .,
 
 ### 결과 확인
 print(model_rf)
+summary(model_rf)
 
 ################################################################################
 # 11. Validation
@@ -321,6 +324,60 @@ calculate_r_squared(predicted_y, test_y$rent)
 
 ## [시각화] 관련이 높은 변수 확인
 varImpPlot(model_rf, type = 2, col = 1, cex = 1)
+
+## [시각화] 잔차
+residuals <- test_y$rent - predicted_y
+print(residuals)
+
+plot(predicted_y, residuals,
+     main = "Residual Plot",
+     xlab = "Predicted Values",
+     ylab = "Residuals")
+
+
+################################################################################
+# 12. 다중 선형 회귀 및 Validation
+# 12.x 중 하나만 선택하여 수행하시면 됩니다.
+################################################################################
+
+## 12.1. 전체 변수 포함
+### 12.1.1.
+  model_lm <- lm(rent ~ ., data = train_set)
+    ### 12.1.1. and 502 case
+      ### p-value: < 2.2e-16
+
+## 12.1. 선택 변수만
+### 12.1.1.
+  model_lm <- lm(rent ~ avg_temperature + rainy + windy + no2_ppm + o3_ppm + co_ppm + so2_ppm + part_matter + ultra_part_matter + holiday, data = train_set)
+    ### 12.1.1. and 502 case
+      ### Mean of squared residuals: 28826.67
+      ### % Var explained: 64.8
+
+
+
+## 값 확인
+summary(model_lm)
+
+## 예측
+predicted_y <- predict(model_lm, test_x)
+
+## MSE 점수 확인 - 예측값과 실제값 사이의 제곱 오차의 평균을 계산합니다. 작을수록 좋은 모델입니다.
+mse <- mean((test_y$rent - predicted_y)^2)
+print(mse)
+
+## MAE 점수 확인 - 예측값과 실제값 사이의 절댓값 오차의 평균을 계산합니다. 작을수록 좋은 모델입니다.
+mae <- mean(abs(predicted_y - test_y$rent))
+print(mae)
+
+## MAPE 점수 확인 - 예측값과 실제값 사이의 절댓값 오차를 실제값으로 나눈 후 평균을 계산합니다. 작을수록 좋은 모델입니다.
+mape <- mean(abs((predicted_y - test_y$rent) / test_y$rent)) * 100
+print(mape)
+
+## R-Squared 점수 확인 - 1일 수록 좋음
+calculate_r_squared(predicted_y, test_y$rent)
+
+## [시각화] 관련이 높은 변수 확인
+varImpPlot(model_lm, type = 2, col = 1, cex = 1)
 
 ## [시각화] 잔차
 residuals <- test_y$rent - predicted_y

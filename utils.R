@@ -11,7 +11,7 @@ replace_with_mean <- function(df, column) {
 ################################################################################
 create_weather_data <- function(df, date, branch_no) {
   date <- ymd(date)
-  
+
   guro_data <- data.frame(
     지점 = branch_no,
     일시 = date,
@@ -21,9 +21,9 @@ create_weather_data <- function(df, date, branch_no) {
     `일강수량(mm)` = (df[(df$일시 == date - 1 & df$지점 == branch_no), "일강수량(mm)"] + df[(df$일시 == date + 1 & df$지점 == branch_no), "일강수량(mm)"]) / 2,
     `평균 풍속(m/s)` = (df[(df$일시 == date - 1 & df$지점 == branch_no), "평균 풍속(m/s)"] + df[(df$일시 == date + 1 & df$지점 == branch_no), "평균 풍속(m/s)"]) / 2
   )
-  
+
   colnames(guro_data) <- c("지점", "일시", "평균기온(°C)", "최저기온(°C)", "최고기온(°C)", "일강수량(mm)", "평균 풍속(m/s)")
-  
+
   return(guro_data)
 }
 
