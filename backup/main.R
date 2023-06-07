@@ -16,17 +16,17 @@ install.packages("scales") # 정규화
 ################################################################################
 # 2. 파일 로딩
 ################################################################################
-source('libraries.R')     # 라이브러리
-source('utils.R')         # 유틸리티
-source('data.R')          # data file 관련 함수
-source('eda.R')           # EDA 관련 함수
-source('validation.R')    # 검증 관련 함수
-source('visualization.R') # 시각화 관련 함수
+source("libraries.R") # 라이브러리
+source("utils.R") # 유틸리티
+source("data.R") # data file 관련 함수
+source("eda.R") # EDA 관련 함수
+source("validation.R") # 검증 관련 함수
+source("visualization.R") # 시각화 관련 함수
 
 ################################################################################
 # 3. 통합 데이터 파일 로딩
 ################################################################################
-df = get_full_merged_info("")
+df <- get_full_merged_info("")
 
 str(df)
 summary(df)
@@ -36,7 +36,7 @@ head(df)
 ################################################################################
 # 4. 데이터 분할
 ################################################################################
-sample_split = sample.split(Y = df, SplitRatio = 0.7)
+sample_split <- sample.split(Y = df, SplitRatio = 0.7)
 
 train_set <- subset(x = df, sample_split == TRUE)
 test_set <- subset(x = df, sample_split == FALSE)
@@ -69,20 +69,21 @@ residuals <- test_y$rent - predicted_y
 print(residuals)
 # 잔차 시각화 - MSE 점수 확인
 plot(predicted_y, residuals,
-     main = "Residual Plot",
-     xlab = "Predicted Values",
-     ylab = "Residuals")
+  main = "Residual Plot",
+  xlab = "Predicted Values",
+  ylab = "Residuals"
+)
 
 
 #### 5.2. ntree 100 테스트
 do_randomForest <- function(x, y) {
-  start_time = Sys.time()
+  start_time <- Sys.time()
   print(paste("Start   :", start_time))
   rf <- randomForest(x, y, ntree = 100, type = "regression")
-  finish_time = Sys.time()
+  finish_time <- Sys.time()
   print(paste("Finish  :", finish_time))
   print(paste("Elapsed :", round(difftime(finish_time, start_time, units = "secs"), 3), "seconds"))
-  
+
   return(rf)
 }
 
@@ -103,9 +104,10 @@ residuals <- test_y$rent - predicted_y
 print(residuals)
 # 잔차 시각화 - MSE 점수 확인
 plot(predicted_y, residuals,
-     main = "Residual Plot",
-     xlab = "Predicted Values",
-     ylab = "Residuals")
+  main = "Residual Plot",
+  xlab = "Predicted Values",
+  ylab = "Residuals"
+)
 ####
 
 
@@ -113,13 +115,14 @@ plot(predicted_y, residuals,
 #### 5.3. ntree 100, 변수를 줄여서 테스트
 
 do_randomForest_with_some_var <- function(train_set) {
-  start_time = Sys.time()
+  start_time <- Sys.time()
   print(paste("Start   :", start_time))
 
-  rf <- randomForest(rent ~ avg_temperature + rainy + windy + no2_ppm + o3_ppm + co_ppm + so2_ppm + part_matter + ultra_part_matter + holiday, 
-                             data = train_set, ntree = 100, type = "regression") #importance = TRUE
-  
-  finish_time = Sys.time()
+  rf <- randomForest(rent ~ avg_temperature + rainy + windy + no2_ppm + o3_ppm + co_ppm + so2_ppm + part_matter + ultra_part_matter + holiday,
+    data = train_set, ntree = 100, type = "regression"
+  ) # importance = TRUE
+
+  finish_time <- Sys.time()
   print(paste("Finish  :", finish_time))
   print(paste("Elapsed :", round(difftime(finish_time, start_time, units = "secs"), 3), "seconds"))
 
@@ -143,9 +146,10 @@ residuals <- test_y$rent - predicted_y
 print(residuals)
 # 잔차 시각화 - MSE 점수 확인
 plot(predicted_y, residuals,
-     main = "Residual Plot",
-     xlab = "Predicted Values",
-     ylab = "Residuals")
+  main = "Residual Plot",
+  xlab = "Predicted Values",
+  ylab = "Residuals"
+)
 ####
 
 
@@ -153,7 +157,7 @@ plot(predicted_y, residuals,
 #### 5.4. ntree 100, 정규화 후, 변수를 줄여서 테스트
 
 ########### 정규화
-#columns <- c("avg_temperature", "low_temperature", "high_temperature", "rainy", "windy", "no2_ppm", "o3_ppm", "co_ppm", "so2_ppm", "part_matter", "ultra_part_matter")
+# columns <- c("avg_temperature", "low_temperature", "high_temperature", "rainy", "windy", "no2_ppm", "o3_ppm", "co_ppm", "so2_ppm", "part_matter", "ultra_part_matter")
 df_normalized <- df
 
 normalize_column <- function(col_data) {
@@ -173,7 +177,7 @@ df_normalized$part_matter <- normalize_column(df_normalized$part_matter)
 df_normalized$ultra_part_matter <- normalize_column(df_normalized$ultra_part_matter)
 
 
-sample_split = sample.split(Y = df_normalized, SplitRatio = 0.7)
+sample_split <- sample.split(Y = df_normalized, SplitRatio = 0.7)
 
 train_set <- subset(x = df_normalized, sample_split == TRUE)
 test_set <- subset(x = df_normalized, sample_split == FALSE)
@@ -189,16 +193,17 @@ test_y <- subset(test_set, select = c(rent))
 
 
 do_randomForest_with_some_normalized_var <- function(train_set) {
-  start_time = Sys.time()
+  start_time <- Sys.time()
   print(paste("Start   :", start_time))
-  
-  rf <- randomForest(rent ~ avg_temperature + rainy + windy + no2_ppm + o3_ppm + co_ppm + so2_ppm + part_matter + ultra_part_matter + holiday, 
-                     data = train_set, ntree = 100, type = "regression") #importance = TRUE
-  
-  finish_time = Sys.time()
+
+  rf <- randomForest(rent ~ avg_temperature + rainy + windy + no2_ppm + o3_ppm + co_ppm + so2_ppm + part_matter + ultra_part_matter + holiday,
+    data = train_set, ntree = 100, type = "regression"
+  ) # importance = TRUE
+
+  finish_time <- Sys.time()
   print(paste("Finish  :", finish_time))
   print(paste("Elapsed :", round(difftime(finish_time, start_time, units = "secs"), 3), "seconds"))
-  
+
   return(rf)
 }
 
@@ -219,28 +224,30 @@ residuals <- test_y$rent - predicted_y
 print(residuals)
 # 잔차 시각화 - MSE 점수 확인
 plot(predicted_y, residuals,
-     main = "Residual Plot",
-     xlab = "Predicted Values",
-     ylab = "Residuals")
+  main = "Residual Plot",
+  xlab = "Predicted Values",
+  ylab = "Residuals"
+)
 ####
-start_time = Sys.time()
-finish_time = Sys.time()
+start_time <- Sys.time()
+finish_time <- Sys.time()
 print(paste("Elapsed :", finish_time - start_time))
 
 
 #### 5.5. ntree 100, 정규화 후, 변수를 더 줄여서 테스트
 
 do_randomForest_with_some_normalized_var <- function(train_set) {
-  start_time = Sys.time()
+  start_time <- Sys.time()
   print(paste("Start   :", start_time))
-  
-  rf <- randomForest(rent ~ avg_temperature + rainy + windy + part_matter + holiday, 
-                     data = train_set, ntree = 100, type = "regression") #importance = TRUE
-  
-  finish_time = Sys.time()
+
+  rf <- randomForest(rent ~ avg_temperature + rainy + windy + part_matter + holiday,
+    data = train_set, ntree = 100, type = "regression"
+  ) # importance = TRUE
+
+  finish_time <- Sys.time()
   print(paste("Finish  :", finish_time))
   print(paste("Elapsed :", round(difftime(finish_time, start_time, units = "secs"), 3), "seconds"))
-  
+
   return(rf)
 }
 
@@ -261,7 +268,8 @@ residuals <- test_y$rent - predicted_y
 print(residuals)
 # 잔차 시각화 - MSE 점수 확인
 plot(predicted_y, residuals,
-     main = "Residual Plot",
-     xlab = "Predicted Values",
-     ylab = "Residuals")
+  main = "Residual Plot",
+  xlab = "Predicted Values",
+  ylab = "Residuals"
+)
 ####

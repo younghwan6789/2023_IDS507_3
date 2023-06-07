@@ -10,3 +10,20 @@ calculate_r_squared <- function(predicted, actual) {
   
   return(r_squared)
 }
+
+################################################################################
+# MSE, MAE, MAPE
+################################################################################
+calculate_mse_mae_mape <- function(variable, prediction) {
+  ## MSE 점수 확인 - 예측값과 실제값 사이의 제곱 오차의 평균을 계산합니다. 작을수록 좋은 모델입니다.
+  mse <- mean((variable - prediction)^2)
+  print(paste("MSE : ", mse))
+
+  ## MAE 점수 확인 - 예측값과 실제값 사이의 절댓값 오차의 평균을 계산합니다. 작을수록 좋은 모델입니다.
+  mae <- mean(abs(prediction - variable))
+  print(paste("MAE : ", mae))
+
+  ## MAPE 점수 확인 - 예측값과 실제값 사이의 절댓값 오차를 실제값으로 나눈 후 평균을 계산합니다. 작을수록 좋은 모델입니다.
+  mape <- mean(abs((prediction - variable) / variable)) * 100
+  print(paste("MAPE: ", mape))
+}
