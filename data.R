@@ -18,7 +18,7 @@ get_ddarung_station_info <- function() {
 # 1~12월 full load 시 90초
 # 5, 9월 load 시 10초
 ################################################################################
-get_ddarung_daily_info_2022 <- function(condition) {
+get_ddarung_daily_info_2022 <- function(condition = NULL) {
   start_time = Sys.time()
   print(paste("Start   :", start_time))
   
@@ -79,8 +79,17 @@ get_ddarung_daily_info_2022 <- function(condition) {
 ################################################################################
 # 날씨 정보
 ################################################################################
-get_weather_info <- function(file_name) {
-  df <- read_csv(file_name, locale=locale('ko', encoding='euc-kr'))
+get_weather_info <- function(year = NULL) {
+
+  if (!is.null(year)) {
+    if (year == 2022) {
+      df <- read_csv("data/weather/OBS_AWS_DD_20230531190259_2022.csv", locale=locale('ko', encoding='euc-kr')) 
+      # 지점명 삭제, 지점 ID를 대여소 번호와 매칭 예정.
+      return(subset(df, select = -c(지점명)))
+    }
+  } 
+
+  df <- read_csv("data/weather/OBS_AWS_DD_20230531164605_2018-2022.csv", locale=locale('ko', encoding='euc-kr')) 
   # 지점명 삭제, 지점 ID를 대여소 번호와 매칭 예정.
   return(subset(df, select = -c(지점명)))
 }
@@ -95,9 +104,9 @@ get_matching_info <- function() {
 ################################################################################
 # 대기오염도
 ################################################################################
-get_airpolution_info <- function(year) {
-  if (year == 2022) {
-    return(read_csv("data/airpolution/일별평균대기오염도_2022.csv", locale=locale('ko', encoding='euc-kr')))  
+get_airpolution_info <- function(year = NULL) {
+  if (!is.null(year)) {
+    return(read_csv(paste0("data/airpolution/일별평균대기오염도_",year,".csv"), locale=locale('ko', encoding='euc-kr')))  
   }
   
   ap1 <- read_csv("data/airpolution/일별평균대기오염도_2018.csv", locale=locale('ko', encoding='euc-kr'))
@@ -111,8 +120,14 @@ get_airpolution_info <- function(year) {
 ################################################################################
 # 공휴일 정보
 ################################################################################
-get_holiday_info <- function() {
-  data_holiday <- read_xml("data/holiday/korea_holidays_2022.xml")
+get_holiday_info <- function(year = NULL) {
+  if (!is.null(year)) {
+    if (year == 2022) {
+      data_holiday <- read_xml("data/holiday/korea_holidays_2022.xml")
+    }
+  } else {
+    data_holiday <- read_xml("data/holiday/korea_holidays_2018_2022.xml")
+  }
   
   datetime <- xml2::xml_find_all(data_holiday, "//item/locdate") %>% xml2::xml_text()
   isHoliday <- xml2::xml_find_all(data_holiday, "//item/isHoliday") %>% xml2::xml_text()
@@ -126,7 +141,7 @@ get_holiday_info <- function() {
 ################################################################################
 # 통합 데이터
 ################################################################################
-get_full_merged_info <- function(condition) {
+get_full_merged_info <- function(condition = NULL) {
 ### 각각 로딩
   df_station <- get_ddarung_station_info()
   df_daily <- get_ddarung_daily_info_2022(condition)
@@ -171,7 +186,7 @@ get_full_merged_info <- function(condition) {
 ################################################################################
 # 따릉이 일별 사용 정보 - 2018년 ~ 2021년
 ################################################################################
-get_ddarung_monthly_info_2018 <- function(type, file_name, station_no) {
+get_ddarung_monthly_info_2018 <- function(type = NULL, file_name = NULL, station_no = NULL) {
 
   if (type == 1) {
     if (file_name == 1) {
@@ -214,7 +229,7 @@ get_ddarung_monthly_info_2018 <- function(type, file_name, station_no) {
   }
 }
 
-get_ddarung_daily_info_2018 <- function(station_no) {
+get_ddarung_daily_info_2018 <- function(station_no = NULL) {
   df_first <- get_ddarung_monthly_info_2018(1, 1, station_no)
   df_second <- get_ddarung_monthly_info_2018(1, 2, station_no)  
   df_third <- get_ddarung_monthly_info_2018(2, 3, station_no)
@@ -229,7 +244,7 @@ get_ddarung_daily_info_2018 <- function(station_no) {
   return(df_merged)
 }
 
-get_ddarung_monthly_info_2019 <- function(type, file_name, station_no) {
+get_ddarung_monthly_info_2019 <- function(type = NULL, file_name = NULL, station_no = NULL) {
 
   file_names = c("data/ddarung/서울특별시 공공자전거 이용 정보(2019.1.1~5.31)4.csv", 
   "data/ddarung/서울특별시 공공자전거 이용정보_2019.6.csv", 
@@ -296,7 +311,7 @@ get_ddarung_monthly_info_2019 <- function(type, file_name, station_no) {
   }
 }
 
-get_ddarung_daily_info_2019 <- function(station_no) {
+get_ddarung_daily_info_2019 <- function(station_no = NULL) {
   df_first <- get_ddarung_monthly_info_2019(1, 1, station_no)
   df_jun <- get_ddarung_monthly_info_2019(2, 2, station_no)
   df_jul <- get_ddarung_monthly_info_2019(2, 3, station_no)
@@ -309,7 +324,7 @@ get_ddarung_daily_info_2019 <- function(station_no) {
   return(rbind(df_first, df_jun, df_jul, df_aug, df_sep, df_oct, df_nov, df_dec))
 }
 
-get_ddarung_monthly_info_2020 <- function(file_name, station_no) {
+get_ddarung_monthly_info_2020 <- function(file_name = NULL, station_no = NULL) {
   df <- read_csv(file_name, locale=locale('ko', encoding='euc-kr'))
 
   df <- subset(df, select = -c(대여소, 대여구분코드, 성별, 연령대코드, 운동량, 탄소량, `이동거리(M)`, `이용시간(분)`))
@@ -326,7 +341,7 @@ get_ddarung_monthly_info_2020 <- function(file_name, station_no) {
   return(df)  
 }
 
-get_ddarung_daily_info_2020 <- function(station_no) {
+get_ddarung_daily_info_2020 <- function(station_no = NULL) {
   df_first <- get_ddarung_monthly_info_2020("data/ddarung/공공자전거 이용정보(일별)_2020.01~05.csv", station_no)
   df_second <- get_ddarung_monthly_info_2020("data/ddarung/공공자전거 이용정보(일별)_2020.06.csv", station_no)
   df_third <- get_ddarung_monthly_info_2020("data/ddarung/공공자전거 이용정보(일별)_2020.07~12.csv", station_no)
@@ -334,7 +349,7 @@ get_ddarung_daily_info_2020 <- function(station_no) {
   return(rbind(df_first, df_second, df_third))
 }
 
-get_ddarung_monthly_info_2021 <- function(type, file_name, station_no) {
+get_ddarung_monthly_info_2021 <- function(type = NULL, file_name = NULL, station_no = NULL) {
 print(paste(type, file_name, station_no))
 if (type == 1) {
   df <- read_csv(file_name, locale=locale('ko', encoding='euc-kr'))
@@ -373,7 +388,7 @@ if (type == 2) {
 
 }
 
-get_ddarung_daily_info_2021 <- function(station_no) {
+get_ddarung_daily_info_2021 <- function(station_no = NULL) {
   df_jan <- get_ddarung_monthly_info_2021(1, "data/ddarung/공공자전거 이용정보(일별)_2021.01.csv", station_no)
   df_feb <- get_ddarung_monthly_info_2021(1, "data/ddarung/공공자전거 이용정보(일별)_2021.02.csv", station_no)
   df_mar <- get_ddarung_monthly_info_2021(1, "data/ddarung/공공자전거 이용정보(일별)_2021.03.csv", station_no)
