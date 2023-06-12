@@ -33,3 +33,10 @@ create_weather_data <- function(df, date, branch_no) {
 normalize_column <- function(col_data) {
   return(rescale(col_data))
 }
+
+################################################################################
+# Column 로그화
+################################################################################
+log_transform <- function(col_data) {
+  return(log(col_data))
+}

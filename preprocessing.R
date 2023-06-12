@@ -13,8 +13,6 @@ pre_proc_weather <- function(df) {
   df <- replace_with_mean(df, "최고기온(°C)")
   df <- replace_with_mean(df, "평균기온(°C)")
   
-  df <- pre_proc_add_guro(df) # 구로구 결측치 삽입 - 2022-06-16, 2022-09-06
-  
   return(df)
 }
 

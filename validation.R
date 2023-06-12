@@ -19,6 +19,10 @@ calculate_mse_mae_mape <- function(variable, prediction) {
   mse <- mean((variable - prediction)^2)
   print(paste("MSE : ", mse))
 
+  ## RMSE 점수 확인
+  rmse <- sqrt(mean((variable - prediction)^2))
+  print(paste("RMSE: ", rmse))
+
   ## MAE 점수 확인 - 예측값과 실제값 사이의 절댓값 오차의 평균을 계산합니다. 작을수록 좋은 모델입니다.
   mae <- mean(abs(prediction - variable))
   print(paste("MAE : ", mae))
