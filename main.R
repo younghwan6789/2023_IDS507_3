@@ -65,40 +65,48 @@ df_ddarung_full_data <- rbind(df_2018, df_2019, df_2020, df_2021, df_2022)
 
 # 전체 데이터 수 : 3,196,736
 # 결측치 수 : 197, 결측치 row: 197
+sum(is.na(df_ddarung_full_data))
 ## 대여소 번호가 결측치이므로, 삭제를 선택
+df_ddarung_full_data <- na.omit(df_ddarung_full_data)
+sum(is.na(df_ddarung_full_data))
 # 결측치 제외 전체 데이터 수 : 3,196,539
+dim(df_ddarung_full_data)
 
+
+#### 대여소 별 정보 확인
+# a <- df_ddarung_full_data[df_ddarung_full_data$대여소번호 == 2715, ]
+# a <- na.omit(a)
+# # 841
+# a <- df_ddarung_full_data[df_ddarung_full_data$대여소번호 == 502, ]
+# a <- na.omit(a)
+# dim(a)
+# # 1730
+# a <- df_ddarung_full_data[df_ddarung_full_data$대여소번호 == 207, ]
+# # 1730
+# a <- df_ddarung_full_data[df_ddarung_full_data$대여소번호 == 4217, ]
+# # 413
+# a <- na.omit(a)
+# dim(a)
+# a <- df_ddarung_full_data[df_ddarung_full_data$대여소번호 == 1210, ]
+# # 1730
+# a <- na.omit(a)
+# dim(a)
+# a <- df_ddarung_full_data[df_ddarung_full_data$대여소번호 == 4217, ]
+# # 1730
+# a <- na.omit(a)
+# dim(a)
+# a <- df_ddarung_full_data[df_ddarung_full_data$대여소번호 == 2102, ]
+# # 1730
+# a <- na.omit(a)
+# dim(a)
 ####
-a <- df_ddarung_full_data[df_ddarung_full_data$대여소번호 == 2715, ]
-a <- na.omit(a)
-# 841
-a <- df_ddarung_full_data[df_ddarung_full_data$대여소번호 == 502, ]
-a <- na.omit(a)
-dim(a)
-# 1730
-a <- df_ddarung_full_data[df_ddarung_full_data$대여소번호 == 207, ]
-# 1730
 
-a <- df_ddarung_full_data[df_ddarung_full_data$대여소번호 == 4217, ]
-# 413
-a <- na.omit(a)
-dim(a)
-
-a <- df_ddarung_full_data[df_ddarung_full_data$대여소번호 == 1210, ]
-# 1730
-a <- na.omit(a)
-dim(a)
-
-a <- df_ddarung_full_data[df_ddarung_full_data$대여소번호 == 4217, ]
-# 1730
-a <- na.omit(a)
-dim(a)
-
-a <- df_ddarung_full_data[df_ddarung_full_data$대여소번호 == 2102, ]
-# 1730
-a <- na.omit(a)
-dim(a)
-####
+# 502번 대여소 정보만 필터링
+df_ddarung_full_data <- df_ddarung_full_data[df_ddarung_full_data$대여소번호 == 502, ]
+# 결측치 0
+sum(is.na(df_ddarung_full_data))
+# 총 개수 1,730 개
+dim(df_ddarung_full_data)
 
 ################################################################################
 # 2.2. 따릉이 대여소 하나의 2018 ~ 2022 데이터 (대여일자, 대여소, 총이용건수)
@@ -141,6 +149,7 @@ df_weather <- get_weather_info()
 df_weather <- pre_proc_weather(df_weather)
 
 # 전체 데이터 수 : 51,340
+sum(is.na(df_weather))
 # 결측치 수 : 0
 # 결측치 제외 전체 데이터 수 : 51,340
 
@@ -154,7 +163,7 @@ df_weather <- pre_proc_weather(df_weather)
 df_airpolution <- get_airpolution_info()
 
 # 결측치 10,493
-
+sum(is.na(df_airpolution))
 # 2022년 데이터만 불러오려면
 # df_airpolution <- get_airpolution_info(2022)
 
@@ -165,7 +174,10 @@ df_airpolution <- pre_proc_airpolustion(df_airpolution)
 
 # 전체 데이터 수 : 87,182
 # 결측치 수 : 0
+sum(is.na(df_airpolution))
 # 결측치 제외 전체 데이터 수 : 87,182
+dim(df_airpolution)
+
 
 ################################################################################
 # 5. 공휴일 데이터 준비 (2018 ~ 2022)
@@ -179,8 +191,10 @@ df_holiday <- get_holiday_info() # 94개
 # df_holiday <- get_holiday_info(2022) # 20개
 
 # 전체 데이터 수 : 94
+sum(is.na(df_holiday))
 # 결측치 수 : 0
 # 결측치 제외 전체 데이터 수 : 94
+dim(df_holiday)
 
 
 ################################################################################
@@ -193,14 +207,18 @@ df_station <- get_ddarung_station_info()
 
 # 전체 데이터 수 : 2,719
 # 결측치 수 : 0
+sum(is.na(df_station))
 # 결측치 제외 전체 데이터 수 : 2,719
+dim(df_station)
 
 
 df_matching_info <- get_matching_info()
 
 # 전체 데이터 수 : 29
 # 결측치 수 : 0
+sum(is.na(df_matching_info))
 # 결측치 제외 전체 데이터 수 : 29
+dim(df_matching_info)
 
 
 ################################################################################
@@ -212,14 +230,19 @@ df_combined_1 <- merge(df_ddarung_full_data, df_station,
   by.x = "대여소번호", by.y = "대여소 번호", all.x = TRUE
 )
 
+# 502 데이터와 결합 시 결측치 0
+sum(is.na(df_combined_1))
 
 ## 7.2. + 매칭 데이터 결합
 df_combined_2 <- merge(df_combined_1, df_matching_info,
   by.x = "자치구", by.y = "지점명", all.x = TRUE
 )
 
+sum(is.na(df_combined_2)) # 0
+
 ### 전처리: 종로구는 날씨 측정소가 없으므로 용산구(415)로 치환.
-df_combined_2[df_combined_2$자치구 == "종로구" & is.na(df_combined_2$지점), "지점"] <- 415
+# 502 데이터에서는 치환 불필요
+# df_combined_2[df_combined_2$자치구 == "종로구" & is.na(df_combined_2$지점), "지점"] <- 415
 
 
 ## 7.3. + 날씨 데이터
@@ -228,10 +251,11 @@ df_combined_3 <- merge(df_combined_2, df_weather,
   all.x = TRUE
 )
 
-### "502" 의 경우, 여기서 결측치 10 발생 -> 2개의 row
+### 502 의 경우, 여기서 결측치 10 발생
+sum(is.na(df_combined_3))
+# 결측치를 가진 row는 2개
 df_combined_3[!complete.cases(df_combined_3), ]
 
-#### "502" 의 경우,  2개의 row에서 결측치 발생 확인
 #####       대여일자   지점 자치구 대여소번호 총이용건수 평균기온(°C) 최저기온(°C) 최고기온(°C) 일강수량(mm) 평균 풍속(m/s)
 ##### 136  2020-05-07  413 광진구    502       742       NA          NA          NA           NA             NA
 ##### 854  2020-05-07  413 광진구    502       742       NA          NA          NA           NA             NA
@@ -248,13 +272,16 @@ df_combined_4 <- merge(df_combined_3, df_airpolution,
   all.x = TRUE
 )
 
+sum(is.na(df_combined_4)) # 0
+
 
 ## 7.5. + 공휴일 데이터
 # 초기화 0 = 'N', 1 = 'Y'
 df_combined_4$holiday <- "0"
 df_combined_4$holiday[ymd(df_combined_4$대여일자) %in% ymd(df_holiday$datetime)] <- "1"
 
-sum(is.na(df_combined_4))
+sum(is.na(df_combined_4)) # 0
+
 
 ################################################################################
 # 8. 컬럼 전처리
@@ -351,10 +378,11 @@ train_y <- subset(train_set, select = c(rent))
 test_x <- subset(test_set, select = -c(rent))
 test_y <- subset(test_set, select = c(rent))
 
-# 로그화 하기 전 데이터 백업
+# 로그화 하기 전의 종속 변수 백업
 origin_test_y <- test_y
 
-## 로그화 (왜도가 Positive인 변수들) - 음수가 나오지 않도록 +0.01 보정
+## 로그화 (왜도가 Positive인 변수들) - 음수가 나오지 않도록 값을 더하여 보정
+## 로그화 후 min 값이 0이 되는 수를 찾아서 더함
 ### 종속 변수 rent
 train_set$rent <- log(train_set$rent)
 test_set$rent <- log(test_set$rent)
@@ -387,7 +415,6 @@ test_x$part_matter <- log(test_x$part_matter + 1)
 train_x$ultra_part_matter <- log(train_x$ultra_part_matter + 1)
 test_x$ultra_part_matter <- log(test_x$ultra_part_matter + 1)
 
-#high_temperature + rainy + windy + no2_ppm + o3_ppm + co_ppm + so2_ppm + part_matter + ultra_part_matter + holiday
 
 ################################################################################
 # 10. 다중 공선성 확인
@@ -402,11 +429,11 @@ print(vif_values)
 draw_vif(data.frame(Variable = names(vif_values), VIF = vif_values))
 
 # avg_temperature   low_temperature  high_temperature             rainy
-#      451.721490        132.062308        138.371064          1.157015
+#      374.487121        112.484852        116.035758          1.139607
 #           windy           no2_ppm            o3_ppm            co_ppm
-#        1.928044          4.600797          1.937228          2.301119
+#        1.859163          4.263947          1.886430          2.421271
 #         so2_ppm       part_matter ultra_part_matter           holiday
-#        1.468099          3.181534          4.507002          1.017024
+#        1.507104          2.598526          4.055543          1.017844
 
 # VIF (Variance Inflation Factor) 값은 다중공선성을 평가하기 위해 사용되는 지표입니다.
 # 일반적으로 VIF 값이 1보다 작거나 1에 가까우면 다중공선성의 문제가 거의 없다고 판단됩니다.
@@ -420,11 +447,11 @@ vif_values <- vif(lm(rent ~ ., data = subset(train_set, select = -c(avg_temperat
 print(vif_values)
 
 # low_temperature  high_temperature             rainy             windy
-#       19.765853         19.281852          1.151929          1.927305
+#       18.698209         17.767179          1.139488          1.856195
 #         no2_ppm            o3_ppm            co_ppm           so2_ppm
-#        4.553829          1.936310          2.300424          1.462943
+#        4.240931          1.880929          2.421257          1.505385
 #     part_matter ultra_part_matter           holiday
-#        3.172519          4.490386          1.012553
+#        2.594352          4.047745          1.014500
 
 ################################################################################
 # 11. Random Forest
@@ -437,7 +464,7 @@ model_rf <- randomForest(rent ~ .,
   data = train_set, ntree = 100, type = "regression", importance = TRUE
 )
 
-### 11.1.2. ntree = 500
+### 11.1.2. ntree = 500 <<-- 그냥 랜덤 포레스트
 model_rf <- randomForest(rent ~ .,
   data = train_set, ntree = 500, type = "regression", importance = TRUE
 )
@@ -518,8 +545,8 @@ view_residual_plot(test_y$rent, predicted_y)
 ################################################################################
 
 # 정규성을 알아보기 위한 qq 플롯 그리기
-qqnorm(all_full_ready$rent) # 정규성 검정을 위한 QQ 플롯
-qqline(all_full_ready$rent) # 기대되는 정규분포와 비교하는 선 그리기
+qqnorm(df_ready$rent) # 정규성 검정을 위한 QQ 플롯
+qqline(df_ready$rent) # 기대되는 정규분포와 비교하는 선 그리기
 
 # 정규성을 따른다면, glm 모델 적용 가능.
 ## 13.1. 전체 변수 포함
@@ -539,10 +566,6 @@ predicted_y <- predict(model_glm, test_x)
 
 ## MSE, MAE, MAPE 점수 확인
 calculate_mse_mae_mape(test_y$rent, predicted_y)
-
-# [1] "MSE :  48988.2584683718"
-# [1] "MAE :  154.436750983967"
-# [1] "MAPE:  91.2198709329412"
 
 ## R-Squared 점수 확인 - 1일 수록 좋음
 calculate_r_squared(predicted_y, test_y$rent)
