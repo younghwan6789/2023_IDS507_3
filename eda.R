@@ -7,7 +7,7 @@ draw_rent_per_day_geom_line <- function(df) {
         ggtitle("Rental per Day")
 }
 
-drwa_temper_per_day_geom_line <- function(df) {
+draw_temper_per_day_geom_line <- function(df) {
     ggplot(df, aes(x = datetime)) +
         geom_line(aes(y = avg_temperature, color = "Average Temperature")) +
         geom_line(aes(y = low_temperature, color = "Low Temperature")) +
@@ -22,20 +22,41 @@ drwa_temper_per_day_geom_line <- function(df) {
         ))
 }
 
+draw_temper_per_day_geom_histogram <- function(df) {
+ggplot(df, aes(x = high_temperature)) +
+  geom_histogram(fill = "#ff9999", color = "black", bins = 10) +
+  labs(x = "최고 기온", y = "빈도") +
+  ggtitle("최고 기온 히스토그램")
+}
+
 draw_rainy_per_day_geom_line <- function(df) {
     ggplot(df, aes(x = datetime, y = rainy)) +
-        geom_line() +
+        geom_line(color = "#9999ff") +
         xlab("Date") +
         ylab("Rain") +
         ggtitle("Rain per Day")
 }
 
+draw_rainy_per_day_geom_histogram <- function(df) {
+ggplot(df, aes(x = rainy)) +
+  geom_histogram(fill = "#9999ff", color = "black", bins = 10) +
+  labs(x = "강수량", y = "빈도") +
+  ggtitle("강수량 히스토그램")
+}
+
 draw_windy_per_day_geom_line <- function(df) {
     ggplot(df, aes(x = datetime, y = windy)) +
-        geom_line() +
+        geom_line(color = "#008800") +
         xlab("Date") +
         ylab("Wind") +
         ggtitle("Wind per Day")
+}
+
+draw_windy_per_day_geom_histogram <- function(df) {
+ggplot(df, aes(x = windy)) +
+  geom_histogram(fill = "#99ff99", color = "black", bins = 10) +
+  labs(x = "풍속", y = "빈도") +
+  ggtitle("풍속 히스토그램")
 }
 
 draw_part_matters_geom_line <- function(df) {

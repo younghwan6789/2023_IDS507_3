@@ -311,19 +311,27 @@ df_combined_4[!complete.cases(df_combined_4), ]
 ################################################################################
 eda <- df_combined_4
 
-source("eda.R")
-
 # 날짜 별 사용량
 draw_rent_per_day_geom_line(eda)
 
-# 날짜 별 기온
-drwa_temper_per_day_geom_line(eda)
+# 날짜 별 최고 기온
+draw_temper_per_day_geom_line(eda)
+
+# 최고 기온 히스토그램
+draw_temper_per_day_geom_histogram(eda)
 
 # 날짜 별 강수량
 draw_rainy_per_day_geom_line(eda)
 
+# 강수량 히스토그램
+draw_rainy_per_day_geom_histogram(eda)
+
 # 날짜 별 풍속
+source('eda.R')
 draw_windy_per_day_geom_line(eda)
+
+# 풍속 히스토그램
+draw_windy_per_day_geom_histogram(eda)
 
 # 미세먼지, 초미세먼지
 draw_part_matters_geom_line(eda)
