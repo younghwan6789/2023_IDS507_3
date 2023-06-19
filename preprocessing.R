@@ -13,6 +13,9 @@ pre_proc_weather <- function(df) {
   df <- replace_with_mean(df, "최고기온(°C)")
   df <- replace_with_mean(df, "평균기온(°C)")
   
+  # 강수량 이상치 처리
+  df$`일강수량(mm)`[df$`일강수량(mm)` > 200] <- 200
+
   return(df)
 }
 
@@ -28,6 +31,9 @@ pre_proc_airpolustion <- function(df) {
   # date type
   df$측정일시 <- ymd(df$측정일시)
   
+  # 미세먼지 이상치 처리
+  df$`미세먼지농도(㎍/㎥)`[df$`미세먼지농도(㎍/㎥)` > 200] <- 200
+
   return(df)
 }
 
